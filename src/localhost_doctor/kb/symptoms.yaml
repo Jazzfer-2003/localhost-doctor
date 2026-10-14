@@ -1,0 +1,133 @@
+# Localhost Doctor knowledge base.
+# Each entry: patterns (regex) -> plain-English title, likely causes, fixes.
+# Contributions welcome: add an entry, keep patterns specific to one failure.
+
+- id: apache_port_in_use
+  stack: apache
+  match:
+    - "Address already in use"
+    - "AH00072"
+    - "make_sock: could not bind"
+    - "\\(10048\\)"
+    - "Only one usage of each socket address"
+  title: "Apache can't bind its port - something else is already using it"
+  causes:
+    - "Another program (IIS, Skype, VMware, World Wide Web Publishing Service) is listening on port 80/443"
+    - "A leftover httpd.exe from a previous session is still running"
+  fixes:
+    - "Run check_port(80) to identify the process holding the port"
+    - "Stop the conflicting program, or change Apache's port in httpd.conf (Listen 8080) and use http://localhost:8080/"
+
+- id: mysql_port_in_use
+  stack: mysql
+  match:
+    - "Do you already have another mysqld server running"
+    - "Bind on TCP/IP port"
+    - "Can't start server.*Bind on TCP/IP"
+  title: "MySQL can't bind port 3306 - another server or process owns it"
+  causes:
+    - "A second MySQL instance is already running"
+    - "Another program is squatting on port 3306"
+  fixes:
+    - "Run check_port(3306) to see which process holds it"
+    - "Stop the other MySQL instance, or change the port in my.ini"
+
+- id: mysql_another_instance
+  stack: mysql
+  match:
+    - "unable to lock .*ibdata"
+    - "Check that you do not already have another mysqld process"
+    - "data directory.*is not empty"
+  title: "Another MySQL process may already be using this data directory"
+  causes:
+    - "A zombie mysqld.exe survived a Stop click in XAMPP Control Panel"
+    - "Two MySQL installs share the same data directory"
+  fixes:
+    - "Look for leftover mysqld.exe in Task Manager and end it, then start MySQL again"
+    - "Run diagnose_stack to confirm whether anything is listening on 3306"
+
+- id: mysql_innodb_corrupt
+  stack: mysql
+  match:
+    - "InnoDB.*(corrupt|corruption)"
+    - "Can't open .*ibdata"
+    - "Database page corruption"
+    - "Operating system error number"
+  title: "MySQL's InnoDB data files look damaged or unreadable"
+  causes:
+    - "The PC was shut down or lost power while MySQL was writing"
+    - "Disk space or permission problems in the data directory"
+  fixes:
+    - "Back up the mysql/data folder before touching anything"
+    - "Check free disk space, then try starting MySQL again"
+    - "As a last resort restore ibdata1/ib_logfile* from a backup (restoring folders of your databases alone is not enough)"
+
+- id: apache_module_load_fail
+  stack: apache
+  match:
+    - "Cannot load .*mod_"
+    - "cannot load modules"
+    - "AH00534"
+  title: "Apache's config references a module that failed to load"
+  causes:
+    - "A LoadModule line points at a file that does not exist or the wrong PHP/TS build"
+    - "A broken edit in httpd.conf or a leftover extension config"
+  fixes:
+    - "Open the error log lines to see exactly which module failed"
+    - "Comment out the offending LoadModule line or install the matching runtime"
+
+- id: apache_vc_runtime
+  stack: apache
+  match:
+    - "VCRUNTIME140"
+    - "api-ms-win-crt"
+    - "The code execution cannot proceed"
+  title: "A required Visual C++ runtime DLL is missing"
+  causes:
+    - "Visual C++ Redistributable is not installed or the wrong bitness (x86 vs x64)"
+  fixes:
+    - "Install the latest Microsoft Visual C++ Redistributable (both x86 and x64), then restart Apache"
+
+- id: connection_refused
+  stack: any
+  match:
+    - "connection refused"
+    - "ERR_CONNECTION_REFUSED"
+    - "refused to connect"
+    - "Unable to connect"
+  title: "Nothing is answering on that port - the server is not running (or is on another port)"
+  causes:
+    - "Apache/MySQL were never started or exited immediately"
+    - "The site is on 8080 after a port change while the browser still hits port 80"
+  fixes:
+    - "Run diagnose_stack to see what is actually listening"
+    - "If Apache moved to 8080, open http://localhost:8080/ instead"
+
+- id: phpmyadmin_forbidden
+  stack: apache
+  match:
+    - "403"
+    - "Forbidden"
+    - "You don't have permission"
+  title: "Access denied page (403) - Apache is up but refuses to serve this path"
+  causes:
+    - "New phpMyAdmin security config restricts access outside localhost"
+    - "Directory/file permissions or a missing index"
+  fixes:
+    - "Confirm you are browsing from the same machine (http://localhost/phpmyadmin)"
+    - "Check the Apache error log for the exact denial reason"
+
+- id: mysql_shutdown_unexpectedly
+  stack: mysql
+  match:
+    - "MySQL shutdown unexpectedly"
+    - "ended unexpectedly"
+    - "Terminating mysqld"
+    - "Aborting"
+  title: "MySQL exited by itself - the real reason is in its error log"
+  causes:
+    - "Port 3306 taken by another process (most common)"
+    - "Damaged InnoDB files after an unclean shutdown"
+  fixes:
+    - "Run read_error_logs('mysql') to see the actual cause"
+    - "Then follow the matching explanation above"
