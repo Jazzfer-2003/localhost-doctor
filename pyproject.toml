@@ -9,6 +9,9 @@ description = "MCP server that diagnoses broken XAMPP/WAMP localhost stacks"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [
+    { name = "Jazzfer Q. Inigo", email = "206848186+Jazzfer-2003@users.noreply.github.com" }
+]
 keywords = ["mcp", "xampp", "wamp", "apache", "mysql", "localhost", "ai-agent"]
 dependencies = [
     "mcp>=1.2.0",

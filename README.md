@@ -5,6 +5,8 @@ MySQL won't start, when the port is already taken, or when MySQL dies after an
 unclean shutdown — this server gives your AI agent the real answers from your
 machine: running processes, listening ports, and error logs.
 
+**Author:** [Jazzfer Q. Inigo](https://github.com/Jazzfer-2003) · [jazzfer.great-site.net](https://jazzfer.great-site.net/)
+
 <!-- mcp-name: io.github.Jazzfer-2003/localhost-doctor -->
 
 > **"Stop reinstalling XAMPP. Let the AI diagnose your localhost."**
