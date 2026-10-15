@@ -34,7 +34,13 @@ English.
 }
 ```
 
-Or install it from the repository:
+Install it from PyPI:
+
+```bash
+pip install localhost-doctor
+```
+
+Or, for the development version, straight from the repository:
 
 ```bash
 pip install git+https://github.com/Jazzfer-2003/localhost-doctor.git
@@ -78,7 +84,7 @@ are planned for v2 behind explicit user approval.
 ## Setup
 
 ```bash
-pip install git+https://github.com/Jazzfer-2003/localhost-doctor.git
+pip install localhost-doctor
 ```
 
 Register it with your MCP client (see the JSON snippet above). If your
