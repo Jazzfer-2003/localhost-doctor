@@ -2,6 +2,48 @@
 # Each entry: patterns (regex) -> plain-English title, likely causes, fixes.
 # Contributions welcome: add an entry, keep patterns specific to one failure.
 
+- id: nginx_port_in_use
+  stack: nginx
+  match:
+    - 'bind\(\) to \S+ failed \((?:98|48|10048):'
+  title: "nginx can't bind its port - another process is already listening"
+  causes:
+    - "Another server, such as Apache or IIS, already owns the address and port in the error"
+    - "A second nginx instance is trying to use the same listening port"
+  fixes:
+    - "Read nginx's error log for the failed address and port (logs/error.log under the nginx folder on Windows by default; check error_log in nginx.conf if it was changed)"
+    - "Run check_port(80), or check_port with the port shown in the error, to identify the listener before stopping anything"
+    - "If the listener is an intended server, use it instead of starting a duplicate; only stop a conflicting service after confirming it is safe to stop"
+    - "If both servers are needed, back up nginx.conf, choose an unused listen port such as 8080, run nginx -t, then restart nginx and use http://localhost:8080/"
+
+- id: nginx_directory_index_forbidden
+  stack: nginx
+  match:
+    - 'directory index of "[^"\r\n]+" is forbidden'
+  title: "nginx returns 403 - this directory has no usable index page"
+  causes:
+    - "The requested folder has no file named by the index directive, and directory listing is disabled"
+    - "The root or alias setting points at a different folder than the intended site"
+  fixes:
+    - "Read the directory path in nginx's error log (logs/error.log under the nginx folder on Windows by default, or the configured error_log path)"
+    - "Check that root or alias points to the intended site and that the file named by index, such as index.html, exists there"
+    - "If this is an application, check its routing and PHP/backend setup rather than enabling directory listings to hide the error"
+    - "Back up the config before correcting root, alias or index; run nginx -t before reloading. Keep autoindex off unless you intentionally want to publish directory contents"
+
+- id: nginx_upstream_connection_refused
+  stack: nginx
+  match:
+    - 'connect\(\)(?: to \S+)? failed \((?:111|61|10061):[^)\r\n]*\) while connecting to upstream'
+  title: "nginx returns 502 - the upstream application refused the connection"
+  causes:
+    - "The PHP-FastCGI, Node or other backend process is stopped or listening on a different address or port"
+    - "proxy_pass or fastcgi_pass points to the wrong backend endpoint"
+  fixes:
+    - "Read the upstream address and port in nginx's error log (logs/error.log under the nginx folder on Windows by default, or the configured error_log path)"
+    - "For a local TCP backend, run check_port with that upstream port to see whether the expected process is listening"
+    - "Check the backend's own logs and configured listening address; start the intended backend if it is stopped, then retry the request"
+    - "If proxy_pass or fastcgi_pass has the wrong endpoint, back up the config, correct it to match the backend, and run nginx -t before reloading"
+
 - id: apache_port_in_use
   stack: apache
   match:
