@@ -10,11 +10,16 @@ Tools (all read-only; mutating fixes are a planned v2):
 import json
 
 from mcp.server.mcpserver import MCPServer
+from mcp.types import ToolAnnotations
 
 from . import knowledge, logs, xampp
 from .checks import http, ports, processes, services
 
 mcp = MCPServer("localhost-doctor")
+
+# All tools are read-only diagnostics; declare it so clients and trust
+# scanners know they are safe to call and side-effect free.
+READ_ONLY = ToolAnnotations(readOnlyHint=True, idempotentHint=True)
 
 STACK_PROCESS_NAMES = {"httpd.exe", "mysqld.exe", "php-cgi.exe", "apache.exe"}
 
@@ -112,7 +117,7 @@ def _analyze(snapshot: dict) -> tuple[str, list[str]]:
     return verdict, issues
 
 
-@mcp.tool()
+@mcp.tool(annotations=READ_ONLY)
 def diagnose_stack() -> str:
     """Full health check of the local XAMPP/WAMP stack: which stack processes are
     running, who owns ports 80/8080/443/3306, whether localhost answers HTTP,
@@ -135,7 +140,7 @@ def diagnose_stack() -> str:
     return _j(result)
 
 
-@mcp.tool()
+@mcp.tool(annotations=READ_ONLY)
 def check_port(port: int) -> str:
     """Identify which process is listening on a TCP port (e.g. 80, 8080, 3306)
     and what that means for the local stack."""
@@ -153,7 +158,7 @@ def check_port(port: int) -> str:
     return _j({**owner, "listening": True, "meaning": meaning})
 
 
-@mcp.tool()
+@mcp.tool(annotations=READ_ONLY)
 def read_error_logs(component: str = "all", tail: int = 30) -> str:
     """Read the tail of Apache/MySQL error logs from the detected install and
     explain error lines via the knowledge base. component: 'apache', 'mysql' or 'all'."""
@@ -172,7 +177,7 @@ def read_error_logs(component: str = "all", tail: int = 30) -> str:
     return _j(out)
 
 
-@mcp.tool()
+@mcp.tool(annotations=READ_ONLY)
 def explain_symptom(text: str) -> str:
     """Explain a localhost symptom or error message. Paste the raw error text,
     e.g. 'localhost refused to connect' or 'MySQL shutdown unexpectedly'."""
