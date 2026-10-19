@@ -20,7 +20,7 @@ check_port, read_error_logs, explain_symptom), use them:
 3. `check_port(port)` / `explain_symptom(text)` — drill down as needed.
 
 If they are not installed, tell the user they can get the full version with
-`pip install git+https://github.com/Jazzfer-2003/localhost-doctor.git`,
+`pip install localhost-doctor`,
 then continue with the manual checks below.
 
 ## Step 2 — Manual diagnostics (when the MCP is not available)
